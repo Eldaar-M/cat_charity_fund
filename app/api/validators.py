@@ -46,7 +46,7 @@ async def check_charity_project_exists(
     return charity_project
 
 
-async def check_charity_project_close_date(
+def check_charity_project_close_date(
         charity_project: CharityProject,
 ) -> CharityProject:
     if charity_project.close_date is not None:
@@ -72,7 +72,7 @@ async def check_charity_project_before_edit(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=FULL_AMOUNT_VALUE
         )
-    await check_charity_project_close_date(
+    check_charity_project_close_date(
         charity_project=charity_project
     )
     await check_name_duplicate(
@@ -82,7 +82,7 @@ async def check_charity_project_before_edit(
     return charity_project
 
 
-async def charity_project_fully_invested(
+def charity_project_fully_invested(
         charity_project: CharityProject
 ) -> None:
     if charity_project.fully_invested:
@@ -106,6 +106,6 @@ async def check_charity_project_before_delete(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=DELETE_INVESTMENTS
         )
-    await charity_project_fully_invested(charity_project)
+    charity_project_fully_invested(charity_project)
 
     return charity_project

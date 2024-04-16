@@ -51,8 +51,8 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 ## API:
-http://127.0.0.1:8000/swagger
+[Swagger](http://127.0.0.1:8000/swagger)
 
-http://127.0.0.1:8000/redoc
+[ReDoc](http://127.0.0.1:8000/redoc)
 ### Автор 
 [Эльдар Магомедов](https://github.com/Eldaar-M)

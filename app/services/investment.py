@@ -1,13 +1,12 @@
 from datetime import datetime
-from typing import Optional, Union
 
-from app.models import CharityProject, Donation
+from app.models.base import DonationProjectBaseModel
 
 
 def investment_process(
-    target: Union[CharityProject, Donation],
-    sources: Optional[Union[list[CharityProject], list[Donation]]],
-) -> Union[list[CharityProject], list[Donation]]:
+    target: DonationProjectBaseModel,
+    sources: list[DonationProjectBaseModel],
+) -> list[DonationProjectBaseModel]:
     changed = []
     for source in sources:
         investment_amount = min(
