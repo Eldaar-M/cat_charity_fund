@@ -1,13 +1,22 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer
+from sqlalchemy import Boolean, CheckConstraint, Column, DateTime, Integer
 
 from app.constants import INVESTED_AMOUNT_DEFAULT
 from app.core.db import Base
 
 
-class BaseModel(Base):
+class DonationProjectBaseModel(Base):
     __abstract__ = True
+    __table_args__ = (
+        CheckConstraint(
+            'full_amount >= invested_amount'
+        ),
+        CheckConstraint(
+            'invested_amount >= 0'
+        ),
+        CheckConstraint('full_amount > 0'),
+    )
 
     full_amount = Column(Integer, nullable=False)
     invested_amount = Column(Integer, default=INVESTED_AMOUNT_DEFAULT)

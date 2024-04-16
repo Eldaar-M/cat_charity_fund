@@ -1,5 +1,6 @@
 from app.core.db import get_async_session
 from app.core.user import current_superuser, current_user
+from app.crud.charity_project import charity_project_crud
 from app.crud.donation import donation_crud
 from app.models import User
 from app.schemas.donation import DonationAllDB, DonationCreate, DonationDB
@@ -47,8 +48,15 @@ async def create_donation(
         user: User = Depends(current_user)
 ):
     new_donation = await donation_crud.create(
-        obj_in=donation_in, session=session, user=user
+        obj_in=donation_in,
+        session=session,
+        user=user,
+        commit=False
     )
-    await investment_process(session=session)
+    open_charity_project = await charity_project_crud.get_not_closed_objects(
+        session
+    )
+    session.add_all(investment_process(new_donation, open_charity_project))
+    await session.commit()
     await session.refresh(new_donation)
     return new_donation

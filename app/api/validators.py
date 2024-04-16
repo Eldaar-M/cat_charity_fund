@@ -10,10 +10,9 @@ from fastapi import HTTPException
 
 PROJECT_EXISTS = 'Проект с таким именем уже существует!'
 PROJECT_ID_EXISTS = 'Проекта с указанным id не существует!'
-EDIT_CLOSED_PROJECT = 'Нельзя редактировать закрытый проект'
+EDIT_DELTE_CLOSED_PROJECT = 'Нельзя удалять или редактировать закрытый проект!'
 FULL_AMOUNT_VALUE = 'Нелья установить значение full_amount меньше уже вложенной суммы.'
 DELETE_INVESTMENTS = 'В проект были внесены средства, не подлежит удалению!'
-DELETE_CLOSED_PROJECT = 'Нельзя удалять закрытый проект!'
 
 
 async def check_name_duplicate(
@@ -47,6 +46,16 @@ async def check_charity_project_exists(
     return charity_project
 
 
+async def check_charity_project_close_date(
+        charity_project: CharityProject,
+) -> CharityProject:
+    if charity_project.close_date is not None:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=EDIT_DELTE_CLOSED_PROJECT
+        )
+
+
 async def check_charity_project_before_edit(
         project_id: int,
         charity_project_in: CharityProjectUpdate,
@@ -56,12 +65,6 @@ async def check_charity_project_before_edit(
         project_id=project_id,
         session=session
     )
-    if charity_project.close_date is not None:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail=EDIT_CLOSED_PROJECT
-        )
-
     new_full_amount = charity_project_in.full_amount
     if (new_full_amount and
             charity_project.invested_amount > new_full_amount):
@@ -69,13 +72,24 @@ async def check_charity_project_before_edit(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=FULL_AMOUNT_VALUE
         )
-
-    new_name = charity_project_in.name
+    await check_charity_project_close_date(
+        charity_project=charity_project
+    )
     await check_name_duplicate(
-        charity_project_name=new_name,
+        charity_project_name=charity_project_in.name,
         session=session
     )
     return charity_project
+
+
+async def charity_project_fully_invested(
+        charity_project: CharityProject
+) -> None:
+    if charity_project.fully_invested:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=EDIT_DELTE_CLOSED_PROJECT
+        )
 
 
 async def check_charity_project_before_delete(
@@ -92,10 +106,6 @@ async def check_charity_project_before_delete(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=DELETE_INVESTMENTS
         )
-    if charity_project.fully_invested:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail=DELETE_CLOSED_PROJECT
-        )
+    await charity_project_fully_invested(charity_project)
 
     return charity_project

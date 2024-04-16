@@ -4,6 +4,7 @@ from app.api.validators import (check_charity_project_before_delete,
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charity_project_crud
+from app.crud.donation import donation_crud
 from app.schemas.charity_project import (CharityProjectCreate,
                                          CharityProjectDB,
                                          CharityProjectUpdate)
@@ -30,11 +31,13 @@ async def create_new_charity_project(
     )
     new_charity_project = await charity_project_crud.create(
         obj_in=charity_project,
-        session=session
+        session=session,
+        commit=False
     )
-    await investment_process(session=session)
+    open_donations = await donation_crud.get_not_closed_objects(session)
+    session.add_all(investment_process(new_charity_project, open_donations))
+    await session.commit()
     await session.refresh(new_charity_project)
-
     return new_charity_project
 
 
