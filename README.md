@@ -46,7 +46,7 @@ pip install -r requirements.txt
 ```
 alembic upgrade head
 ```
-В коревой директории проекта введите:
+В корневой директории проекта введите:
 ```
 uvicorn app.main:app --reload
 ```
